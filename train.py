@@ -1,25 +1,15 @@
-import struct
 from pathlib import Path
 
+import numpy as np
+import numpy.typing as npt
 import torch
-from tqdm import trange
 
 
-def load_data_from_file(
-    file_name: Path,
-) -> list[tuple[float, float, float, float, float, float, float]]:
-    # each data is 7 32 bit floats
-    # 7 * 4 = 28 bits
-    bits_per_item = 28
-
-    num_bytes = file_name.stat().st_size
-
+def load_data_from_file(file_name: Path) -> npt.NDArray:
     with open(file_name, "rb") as f:
-        print(f"Loading file: {file_name}...")
-        data = [
-            struct.unpack("<fffffff", f.read(28))
-            for _ in trange(num_bytes // bits_per_item)
-        ]
+        print(f"Loading file: {file_name}... ", end="")
+        data = np.fromfile(f, dtype=np.float32).reshape(-1, 7)
+        print(f"loaded {len(data)} data points.")
 
     return data
 
@@ -28,11 +18,31 @@ if __name__ == "__main__":
     data_folder = Path("../stat-final-data/results/").resolve()
     data_file_names = list(data_folder.glob("*.bin"))
 
-    data = load_data_from_file(data_file_names[0])
+    file_data = [load_data_from_file(file_name) for file_name in data_file_names[:2]]
 
-    print(len(data))
+    # combine into one array
+    data = np.concatenate(file_data, axis=0)
 
-    # time = item[6]
+    # delete to free up ram
+    del file_data
 
-    max_time = max(item[6] for item in data)
-    print(max_time)
+    num_data = len(data)
+    test_train_split = 0.8
+    num_train = int(num_data * test_train_split)
+
+    # first 6 are inputs, last one is output (time)
+
+    # convert to x, y pairs for training and testing
+    x_train = torch.from_numpy(data[:num_train, :6])
+    y_train = torch.from_numpy(data[:num_train, 6])
+
+    x_test = torch.from_numpy(data[num_train:, :6])
+    y_test = torch.from_numpy(data[num_train:, 6])
+
+    print(x_train.shape, y_train.shape)
+    print(x_test.shape, y_test.shape)
+
+    # delete to free up ram
+    del data
+
+    input()
