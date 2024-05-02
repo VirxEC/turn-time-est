@@ -6,13 +6,19 @@ import torch
 
 
 MODEL = torch.nn.Sequential(
-    torch.nn.Linear(6, 64),
+    torch.nn.Linear(6, 96),
     torch.nn.Sigmoid(),
-    torch.nn.Linear(64, 128),
+    torch.nn.Linear(96, 96),
     torch.nn.Sigmoid(),
-    torch.nn.Linear(128, 64),
+    torch.nn.Linear(96, 96),
     torch.nn.Sigmoid(),
-    torch.nn.Linear(64, 1),
+    torch.nn.Linear(96, 96),
+    torch.nn.Sigmoid(),
+    torch.nn.Linear(96, 96),
+    torch.nn.Sigmoid(),
+    torch.nn.Linear(96, 96),
+    torch.nn.Sigmoid(),
+    torch.nn.Linear(96, 1),
     torch.nn.ReLU(),
 )
 

@@ -3,6 +3,7 @@ from pathlib import Path
 import numpy as np
 import numpy.typing as npt
 import torch
+from matplotlib import pyplot as plt
 from tqdm import trange
 
 from model import MODEL, load_data_from_file
@@ -38,11 +39,19 @@ def split_train_test(
     return (x_train, y_train), (x_test, y_test)
 
 
+def loss_fn(y_pred, y_true):
+    return torch.mean(100 * torch.abs(y_pred - y_true))
+
+
 if __name__ == "__main__":
-    restart = False
+    restart = True
 
     data_folder = Path("../stat-final-data/results/").resolve()
     data_file_names = list(data_folder.glob("*.bin"))
+
+    file_numbers = [int(file_name.stem) for file_name in data_file_names]
+    file_numbers.sort()
+    data_file_names = [data_folder / f"{file_number}.bin" for file_number in file_numbers]
     num_files = len(data_file_names)
 
     model = MODEL
@@ -51,13 +60,13 @@ if __name__ == "__main__":
         model.load_state_dict(torch.load("model.pth"))
 
         file_start = 24
-        file_numbers = [int(file_name.stem) for file_name in data_file_names if int(file_name.stem) >= file_start]
-        file_numbers.sort()
+        file_numbers = filter(lambda x: x >= file_start, file_numbers)
         data_file_names = [data_folder / f"{file_number}.bin" for file_number in file_numbers]
         num_files = len(data_file_names)
 
-    loss_fn = torch.nn.L1Loss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+
+    print("Model loaded")
 
     for i, file_name in enumerate(data_file_names):
         print(f"\nTraining on {file_name} ({i+1}/{num_files})")
@@ -65,7 +74,7 @@ if __name__ == "__main__":
         (x_train, y_train), (x_test, y_test) = split_train_test(data, 0.9)
 
         num_data = len(x_train)
-        data_per_epoch = 10_000
+        data_per_epoch = 1_000
         num_epochs = num_data // data_per_epoch + 1
 
         for epoch in trange(num_epochs):
@@ -106,5 +115,30 @@ if __name__ == "__main__":
         # accuracy
         distance = torch.mean(torch.abs(y_pred - y_test)).item()
         print(f"Distance: {distance:.4f}")
+
+        # only plot if "P" is written in plot.txt
+        if Path("plot.txt").exists():
+            with open("plot.txt", "r") as f:
+                if "P" not in f.read():
+                    continue
+
+            plt.xlabel("Actual value")
+            plt.ylabel("Predicted")
+            plt.title("Model Performance")
+
+            plot_x = y_test.detach()[:10000]
+            plot_y = y_pred.detach()[:10000]
+
+            plt.scatter(plot_x, plot_y)
+
+            # line of best fit
+            m, b = np.polyfit(plot_x, plot_y, 1)
+            plt.plot(plot_x, m * plot_x + b, color="red")
+
+            # ideal line of fit
+            plt.plot([0, 2], [0, 2], color="green")
+
+            plt.show(block=False)
+            plt.pause(1)
 
         del x_test, y_test
