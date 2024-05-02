@@ -73,21 +73,103 @@ if __name__ == "__main__":
         avg_distance = np.mean(distances)
         print(f"Cumulative average distance: {avg_distance:.4f}")
 
+    num_points = 20000
+
     plt.xlabel("Actual value")
     plt.ylabel("Predicted")
     plt.title("Model Performance")
 
-    plot_x = y[:300000]
-    plot_y = y_preds[:300000]
+    plot_x = y[:num_points]
+    plot_x_2 = y_preds[:num_points]
 
-    plt.scatter(plot_x, plot_y)
+    plt.scatter(plot_x, plot_x_2)
 
     # line of best fit
-    m, b = np.polyfit(plot_x, plot_y, 1)
+    m, b = np.polyfit(plot_x, plot_x_2, 1)
     plt.plot(plot_x, m * plot_x + b, color="red")
 
     # ideal line of fit
     plt.plot([0, 2], [0, 2], color="green")
+
+    fig, axs = plt.subplots(2, 3)
+
+    axs[0, 0].set_xlabel("Time")
+    axs[0, 0].set_ylabel("Ang vel x")
+
+    plot_y = x[:num_points, 0]
+
+    axs[0, 0].scatter(plot_x, plot_y)
+
+    axs[1, 0].set_xlabel("Predicted Time")
+    axs[1, 0].set_ylabel("Ang vel x")
+
+    axs[1, 0].scatter(plot_x_2, plot_y)
+
+    axs[0, 1].set_xlabel("Time")
+    axs[0, 1].set_ylabel("Ang vel y")
+
+    plot_y = x[:num_points, 1]
+
+    axs[0, 1].scatter(plot_x, plot_y)
+
+    axs[1, 1].set_xlabel("Predicted Time")
+    axs[1, 1].set_ylabel("Ang vel y")
+
+    axs[1, 1].scatter(plot_x_2, plot_y)
+
+    axs[0, 2].set_xlabel("Time")
+    axs[0, 2].set_ylabel("Ang vel z")
+
+    plot_y = x[:num_points, 2]
+
+    axs[0, 2].scatter(plot_x, plot_y)
+
+    axs[1, 2].set_xlabel("Predicted Time")
+    axs[1, 2].set_ylabel("Ang vel z")
+
+    axs[1, 2].scatter(plot_x_2, plot_y)
+
+    fig, axs = plt.subplots(2, 3)
+
+    axs[0, 0].set_xlabel("Time")
+    axs[0, 0].set_ylabel("Pitch")
+
+    plot_y = x[:num_points, 3]
+
+    axs[0, 0].scatter(plot_x, plot_y)
+
+    axs[1, 0].set_xlabel("Predicted Time")
+    axs[1, 0].set_ylabel("Pitch")
+
+    axs[1, 0].scatter(plot_x_2, plot_y)
+
+    axs[0, 1].set_xlabel("Time")
+    axs[0, 1].set_ylabel("Yaw")
+
+    plot_y = x[:num_points, 4]
+
+    axs[0, 1].scatter(plot_x, plot_y)
+
+    axs[1, 1].set_xlabel("Predicted Time")
+    axs[1, 1].set_ylabel("Yaw")
+
+    axs[1, 1].scatter(plot_x_2, plot_y)
+
+    axs[0, 2].set_xlabel("Time")
+    axs[0, 2].set_ylabel("Roll")
+
+    plot_y = x[:num_points, 5]
+
+    axs[0, 2].scatter(plot_x, plot_y)
+
+    axs[1, 2].set_xlabel("Predicted Time")
+    axs[1, 2].set_ylabel("Roll")
+
+    axs[1, 2].scatter(plot_x_2, plot_y)
+
+    plt.figure()
+    plt.xlabel("Time")
+    plt.boxplot(plot_x, vert=False)
 
     plt.show()
 
